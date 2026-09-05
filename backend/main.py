@@ -329,7 +329,17 @@ async def razorpay_webhook(request: Request):
                 if outcome.get('campaign_target_id'):
                     _execute_query("UPDATE campaign_targets SET status = 'PAID' WHERE id = ?", (outcome['campaign_target_id'],), commit=True)
                     
+                    # Check if all targets for this campaign are now concluded (PAID, EXPIRED, FAILED)
+                    target = _execute_query("SELECT campaign_id FROM campaign_targets WHERE id = ?", (outcome['campaign_target_id'],), fetch_one=True)
+                    if target and target.get('campaign_id'):
+                        cid = target['campaign_id']
+                        pending_count = _execute_query("SELECT COUNT(*) as count FROM campaign_targets WHERE campaign_id = ? AND status IN ('PENDING', 'PROCESSING', 'LINK_GENERATED')", (cid,), fetch_one=True)
+                        if pending_count and pending_count['count'] == 0:
+                            _execute_query("UPDATE campaigns SET status = 'COMPLETED', updated_at = ? WHERE id = ?", (now, cid), commit=True)
+                            print(f"[Webhook] All targets concluded. Campaign {cid} marked as COMPLETED.")
+                    
                 print(f"[Webhook] Recorded recovery of {amount_paid/100} INR for link {plink_id}")
+
 
     elif event == 'payment_link.expired':
         plink = payload.get('payload', {}).get('payment_link', {}).get('entity', {})
