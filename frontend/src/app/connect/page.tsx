@@ -120,7 +120,7 @@ export default function ConnectRazorpay() {
             </h2>
             
             <div className="space-y-4">
-              <SyncStep label="Razorpay account connected" active={status !== "idle"} />
+              <SyncStep label="Razorpay account connected" active={true} />
               <SyncStep label="Importing payment data" active={status === "syncing" || status === "ready"} loading={status === "syncing"} />
               <SyncStep label="Building customer profiles" active={status === "syncing" || status === "ready"} loading={status === "syncing"} />
               <SyncStep label="Calculating recovery opportunities" active={status === "syncing" || status === "ready"} loading={status === "syncing"} />
