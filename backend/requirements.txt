@@ -1,0 +1,14 @@
+pandas
+xgboost
+faker
+numpy
+fastapi
+uvicorn
+python-dotenv
+requests
+google-genai
+pydantic
+apscheduler
+razorpay
+scikit-learn
+joblib
