@@ -8,17 +8,23 @@ DB_PATH = os.path.join(os.path.dirname(__file__), 'fitfuel.db')
 MERCHANT_ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env.merchant')
 
 def get_razorpay_client():
-    if not os.path.exists(MERCHANT_ENV_FILE):
-        raise ValueError("Merchant credentials not found. Please connect Razorpay first.")
-    
-    load_dotenv(MERCHANT_ENV_FILE, override=True)
-    key_id = os.getenv('RAZORPAY_KEY_ID')
-    key_secret = os.getenv('RAZORPAY_KEY_SECRET')
+    key_id = None
+    key_secret = None
+
+    if os.path.exists(MERCHANT_ENV_FILE):
+        load_dotenv(MERCHANT_ENV_FILE, override=True)
+        key_id = os.getenv('RAZORPAY_KEY_ID')
+        key_secret = os.getenv('RAZORPAY_KEY_SECRET')
     
     if not key_id or not key_secret:
-        raise ValueError("Invalid Razorpay credentials.")
+        key_id = os.environ.get('RAZORPAY_KEY_ID')
+        key_secret = os.environ.get('RAZORPAY_KEY_SECRET')
+
+    if not key_id or not key_secret:
+        raise ValueError("Merchant credentials not found. Please configure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.")
         
     return razorpay.Client(auth=(key_id, key_secret))
+
 
 def fetch_all_paginated(api_method):
     options = {'count': 100, 'skip': 0}
