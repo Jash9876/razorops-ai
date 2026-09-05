@@ -15,12 +15,25 @@ import json
 from razorpay_client import create_payment_link
 from database.sync_service import sync_razorpay_data
 from database.generate_data import generate_data
+from database.init_db import init_db
 
 load_dotenv()
 
 RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET')
 
 app = FastAPI(title="RazorOps AI V1 API")
+
+@app.on_event("startup")
+def on_startup():
+    DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'fitfuel.db')
+    if not os.path.exists(DB_PATH):
+        init_db()
+        generate_data()
+        try:
+            from ml.opportunity_scorer import generate_predictions
+            generate_predictions()
+        except Exception as e:
+            print("Predictions generation on startup notice:", e)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +44,7 @@ app.add_middleware(
 )
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'fitfuel.db')
+
 
 def _execute_query(query, params=(), commit=False, fetch_one=False):
     conn = sqlite3.connect(DB_PATH)
