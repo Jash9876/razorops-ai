@@ -166,6 +166,7 @@ export default function RazorOpsDashboard() {
               onExecute={handleExecute}
               formatINR={formatINR}
               formatPaiseToINR={formatPaiseToINR}
+              isDemo={isDemo}
             />
           ) : (
             <div className="glass-panel p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
@@ -179,7 +180,7 @@ export default function RazorOpsDashboard() {
   );
 }
 
-function CampaignPipeline({ campaign, targets, onApprove, onExecute, formatINR, formatPaiseToINR }: any) {
+function CampaignPipeline({ campaign, targets, onApprove, onExecute, formatINR, formatPaiseToINR, isDemo }: any) {
   
   // Pipeline status computation
   const status = campaign.status;
@@ -361,12 +362,20 @@ function CampaignPipeline({ campaign, targets, onApprove, onExecute, formatINR, 
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center text-zinc-300">
                 <span>Payment Links Created</span>
-                <span className="font-bold text-white">{linksGenerated}</span>
+                <span className="font-bold text-white">
+                  {isDemo && linksGenerated === 0 ? targetCount : linksGenerated}
+                </span>
               </div>
-              {linksFailed > 0 && (
+              {linksFailed > 0 && !isDemo && (
                 <div className="flex justify-between items-center text-red-400">
                   <span>Failed Generation</span>
                   <span className="font-bold">{linksFailed}</span>
+                </div>
+              )}
+              {isDemo && (
+                <div className="text-xs text-zinc-500 mt-2 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span>Demo Sandbox: Simulated execution targets active</span>
                 </div>
               )}
             </div>
@@ -390,8 +399,8 @@ function CampaignPipeline({ campaign, targets, onApprove, onExecute, formatINR, 
             <div className="grid grid-cols-4 gap-2 text-center text-xs font-bold text-zinc-500">
               <div className="bg-black/30 p-2 rounded text-emerald-400">{paidCount} PAID</div>
               <div className="bg-black/30 p-2 rounded text-red-400">{targets.filter((t: any) => t.recovery_status === 'EXPIRED').length} EXPIRED</div>
-              <div className="bg-black/30 p-2 rounded">{linksGenerated - paidCount - targets.filter((t: any) => t.recovery_status === 'EXPIRED').length} PENDING</div>
-              <div className="bg-black/30 p-2 rounded">{linksFailed} FAILED</div>
+              <div className="bg-black/30 p-2 rounded">{isDemo && linksGenerated === 0 ? targetCount : (linksGenerated - paidCount - targets.filter((t: any) => t.recovery_status === 'EXPIRED').length)} PENDING</div>
+              <div className="bg-black/30 p-2 rounded">{isDemo ? 0 : linksFailed} FAILED</div>
             </div>
           </div>
 
